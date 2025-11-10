@@ -1,0 +1,34 @@
+# Step 1: Import libraries
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier
+from sklearn.metrics import accuracy_score
+
+# Step 2: Load dataset
+data = load_breast_cancer()
+X = data.data
+y = data.target
+
+# Step 3: Split into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Create models
+dt = DecisionTreeClassifier(random_state=42)
+bagging = BaggingClassifier(DecisionTreeClassifier(), n_estimators=10, random_state=42)
+boosting = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=50, random_state=42)
+
+# Step 5: Train models
+dt.fit(X_train, y_train)
+bagging.fit(X_train, y_train)
+boosting.fit(X_train, y_train)
+
+# Step 6: Predict results
+y_pred_dt = dt.predict(X_test)
+y_pred_bag = bagging.predict(X_test)
+y_pred_boost = boosting.predict(X_test)
+
+# Step 7: Print accuracies
+print("Decision Tree Accuracy:", round(accuracy_score(y_test, y_pred_dt), 3))
+print("Bagging Accuracy:", round(accuracy_score(y_test, y_pred_bag), 3))
+print("Boosting Accuracy:", round(accuracy_score(y_test, y_pred_boost), 3))
