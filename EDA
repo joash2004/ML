@@ -1,0 +1,24 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load dataset
+# df = pd.read_csv("your_dataset.csv")
+df = sns.load_dataset("titanic")  # example offline dataset
+
+# Numeric columns – histograms
+for col in df.select_dtypes(include='number').columns:
+    sns.histplot(df[col], kde=True)
+    plt.title(col)
+    plt.show()
+
+# Categorical columns – count plots
+for col in df.select_dtypes(include='object').columns:
+    sns.countplot(x=col, data=df)
+    plt.title(col)
+    plt.xticks(rotation=45)
+    plt.show()
+
+# Pairplot for relationships between numeric features
+sns.pairplot(df.select_dtypes(include='number'))
+plt.show()
