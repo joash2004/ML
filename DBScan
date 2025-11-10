@@ -1,0 +1,26 @@
+import pandas as pd
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import load_iris
+import matplotlib.pyplot as plt
+
+# Load dataset (Iris used if CSV not found)
+try:
+    df = pd.read_csv("dbscan.csv")
+except:
+    data = load_iris()
+    df = pd.DataFrame(data.data, columns=data.feature_names)
+
+# Preprocess (use only first two features for 2D plotting)
+X = StandardScaler().fit_transform(df.iloc[:, :2])
+
+# Build and fit DBSCAN model
+dbscan = DBSCAN(eps=0.5, min_samples=15)
+labels = dbscan.fit_predict(X)
+
+# Plot clusters
+plt.scatter(X[:, 0], X[:, 1], c=labels, cmap="rainbow", s=50)
+plt.title("DBSCAN Clustering")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
