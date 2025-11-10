@@ -1,59 +1,50 @@
 # Step 1: Import libraries
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score,
-    f1_score, confusion_matrix, roc_curve, auc
-)
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
-# Step 2: Load dataset
+# Step 2: Load the dataset
 data = load_breast_cancer()
 X = data.data
 y = data.target
 
-# Step 3: Split dataset
+# Step 3: Split into training and testing data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Step 4: Scale features
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# Step 4: Create models
+models = {
+    "Decision Tree": DecisionTreeClassifier(),
+    "SVM Linear": SVC(kernel='linear', probability=True),
+    "SVM RBF": SVC(kernel='rbf', probability=True)
+}
 
-# Step 5: Train logistic regression model
-model = LogisticRegression(max_iter=1000, solver='lbfgs')
-model.fit(X_train_scaled, y_train)
+# Step 5: Train and evaluate each model
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)[:, 1]  # for ROC AUC
 
-# Step 6: Predictions
-y_pred = model.predict(X_test_scaled)
-y_pred_prob = model.predict_proba(X_test_scaled)[:, 1]
+    # Step 6: Print the metrics
+    print(f"\n{name}")
+    print("Accuracy:", round(accuracy_score(y_test, y_pred), 3))
+    print("Precision:", round(precision_score(y_test, y_pred), 3))
+    print("Recall:", round(recall_score(y_test, y_pred), 3))
+    print("F1-Score:", round(f1_score(y_test, y_pred), 3))
+    print("AUC-ROC:", round(roc_auc_score(y_test, y_proba), 3))
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
-# Step 7: Performance metrics
-acc = accuracy_score(y_test, y_pred)
-prec = precision_score(y_test, y_pred)
-rec = recall_score(y_test, y_pred)
-f1 = f1_score(y_test, y_pred)
-cm = confusion_matrix(y_test, y_pred)
+     # ROC curve
+    fpr, tpr, _ = roc_curve(y_test, y_proba)
+    auc_score = roc_auc_score(y_test, y_proba)
+    plt.plot(fpr, tpr, label=f"{name} (AUC = {auc_score:.2f})")
 
-print("Accuracy:", round(acc, 3))
-print("Precision:", round(prec, 3))
-print("Recall:", round(rec, 3))
-print("F1 Score:", round(f1, 3))
-print("Confusion Matrix:\n", cm)
-
-# Step 8: ROC curve
-fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
-roc_auc = auc(fpr, tpr)
-
-plt.figure()
-plt.plot(fpr, tpr, label=f'ROC Curve (AUC = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
-plt.title('ROC Curve - Logistic Regression (Breast Cancer Dataset)')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
+# Step 6: Finalize ROC plot
+plt.plot([0, 1], [0, 1], 'k--', label="Random Guess")
+plt.title("ROC Curve Comparison")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
 plt.legend()
 plt.show()
 
